@@ -10,8 +10,11 @@
   "imports": {
     "@cliffy/command": "jsr:@cliffy/command@^1.0.0-rc.7",
     "@hongminhee/iso639-1": "jsr:@hongminhee/iso639-1@^1.3.20090901",
+    "@langchain/anthropic": "npm:@langchain/anthropic@^0.3.12",
     "@langchain/core": "npm:@langchain/core@^0.3.37",
+    "@langchain/deepseek": "npm:@langchain/deepseek@^0.0.1",
     "@langchain/google-genai": "npm:@langchain/google-genai@^0.1.8",
+    "@langchain/openai": "npm:@langchain/openai@^0.4.2",
     "@paoramen/cheer-reader": "jsr:@paoramen/cheer-reader@^0.1.2",
     "cheerio": "npm:cheerio@^1.0.0",
     "turndown": "npm:turndown@^7.2.0"
@@ -23,6 +26,6 @@
     ]
   },
   "tasks": {
-    "run": "deno run --allow-net --allow-env=NODE_V8_COVERAGE,UNDICI_NO_FG,JEST_WORKER_ID,GOOGLE_API_KEY,LANGCHAIN_VERBOSE,LANGCHAIN_TRACING,LANGCHAIN_TRACING_V2,LANGSMITH_TRACING,LANGSMITH_TRACING_V2 src/cli.ts"
+    "run": "deno run --allow-net --allow-env src/cli.ts"
   }
 }

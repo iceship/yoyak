@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { authoritativeLabels, type LanguageCode } from "@hongminhee/iso639-1";
+import type { BaseChatModel } from "@langchain/core";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 
 function getPrompt(language: LanguageCode): string {
   const languageName = authoritativeLabels[language].en;
@@ -23,16 +23,19 @@ function getPrompt(language: LanguageCode): string {
 Your task is to identify the language of the text I provide and accurately translate \
 it into the ${languageName} language while preserving the meaning, tone, \
 and nuance of the original text. Please maintain proper grammar, spelling, \
-and punctuation in the translated version. The input and output are both in Markdown.`;
+and punctuation in the translated version. The input and output are both in Markdown. \
+No other information is needed than the text itself.`;
 }
 
 /**
  * Translates the given text into the target language.
+ * @param model The model to use for translation.
  * @param text The text to translate.
  * @param targetLanguage The target language code in ISO 639-1.
  * @returns The translated text.
  */
 export async function translate(
+  model: BaseChatModel,
   text: string,
   targetLanguage: LanguageCode,
 ): Promise<string> {
@@ -40,10 +43,6 @@ export async function translate(
     new SystemMessage(getPrompt(targetLanguage)),
     new HumanMessage(text),
   ];
-  const llm = new ChatGoogleGenerativeAI({
-    model: "gemini-2.0-flash-exp",
-    maxRetries: 2,
-  });
-  const result = await llm.invoke(messages);
+  const result = await model.invoke(messages);
   return result.content.toString();
 }
