@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { authoritativeLabels, type LanguageCode } from "@hongminhee/iso639-1";
-import type { BaseChatModel } from "@langchain/core";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import type { Model } from "./models.ts";
 
 function getPrompt(language: LanguageCode): string {
   const languageName = authoritativeLabels[language].en;
@@ -35,7 +35,7 @@ No other information is needed than the text itself.`;
  * @returns The translated text.
  */
 export async function translate(
-  model: BaseChatModel,
+  model: Model,
   text: string,
   targetLanguage: LanguageCode,
 ): Promise<string> {

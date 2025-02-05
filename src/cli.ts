@@ -14,11 +14,39 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { Command, EnumType } from "@cliffy/command";
+import { Input } from "@cliffy/prompt";
 import { isLanguageCode, validateLanguageCode } from "@hongminhee/iso639-1";
 import metadata from "../deno.json" with { type: "json" };
-import { type ModelMoniker, modelMonikers, models } from "./models.ts";
+import {
+  type Model,
+  modelClasses,
+  type ModelMoniker,
+  modelMonikers,
+  testModel,
+} from "./models.ts";
 import { scrape } from "./scrape.ts";
 import { translate } from "./translate.ts";
+
+function getModel(
+  options: { model?: ModelMoniker; apiKey?: string },
+): Model {
+  let { model, apiKey } = options;
+  model ??= (localStorage.getItem("model") as ModelMoniker | undefined) ??
+    undefined;
+  apiKey ??= localStorage.getItem("apiKey") ?? undefined;
+  if (model == null) {
+    console.error(
+      "-m/--model: The model must be specified for translation.",
+    );
+    Deno.exit(1);
+  } else if (apiKey == null) {
+    console.error(
+      "-a/--api-key: The API key must be specified for the model.",
+    );
+    Deno.exit(1);
+  }
+  return new modelClasses[model]({ model, apiKey });
+}
 
 const scrapeCommand = new Command()
   .arguments("<url:string>")
@@ -29,7 +57,10 @@ const scrapeCommand = new Command()
       "Do not translate if not specified.",
   )
   .action(
-    async (options: { model: ModelMoniker; language: string }, url: string) => {
+    async (
+      options: { model?: ModelMoniker; apiKey?: string; language: string },
+      url: string,
+    ) => {
       let result = await scrape(url);
       if (options.language != null) {
         if (!isLanguageCode(options.language)) {
@@ -43,22 +74,45 @@ const scrapeCommand = new Command()
       }
       if (options.language) {
         validateLanguageCode(options.language);
-        if (options.model == null) {
-          console.error(
-            "-m/--model: The model must be specified for translation.",
-          );
-          Deno.exit(1);
-        }
-        const model = new models[options.model]({
-          model: options.model,
-        });
+        const model = getModel(options);
         result = await translate(model, result, options.language);
       }
       console.log(result);
     },
   );
 
+const getModelCommand = new Command()
+  .description(
+    "Get the configured default model and the corresponding API key.",
+  )
+  .action(() => {
+    const model = localStorage.getItem("model");
+    const apiKey = localStorage.getItem("apiKey");
+    if (model == null || apiKey == null) {
+      console.error("No model is configured.");
+      Deno.exit(1);
+    }
+    console.log(`Model: ${model}`);
+    console.log(`API key: ${apiKey}`);
+  });
+
 const modelMoniker = new EnumType(modelMonikers);
+
+const setModelCommand = new Command()
+  .arguments("<model:model>")
+  .description("Set the default model and the corresponding API key.")
+  .action(async (options: { apiKey?: string }, model: ModelMoniker) => {
+    const apiKey = options.apiKey ?? await Input.prompt("API key:");
+    const llm = getModel({ model, apiKey });
+    if (!await testModel(llm)) {
+      console.error(
+        "The model is not working; check the API key or your network connection.",
+      );
+      Deno.exit(1);
+    }
+    localStorage.setItem("model", model);
+    localStorage.setItem("apiKey", apiKey);
+  });
 
 const command = new Command()
   .globalType("model", modelMoniker)
@@ -67,8 +121,13 @@ const command = new Command()
   .meta("License", "GPL-3.0")
   .description("An LLM-powered CLI tool for summarizing web pages.")
   .help({ hints: true })
-  .globalOption("-m, --model <model:model>", "The model to use.")
-  .command("scrape", scrapeCommand);
+  .globalOption("-m, --model <model:model>", "The model to use.", {
+    depends: ["api-key"],
+  })
+  .globalOption("-a, --api-key <apiKey:string>", "The API key for the model.")
+  .command("scrape", scrapeCommand)
+  .command("get-model", getModelCommand)
+  .command("set-model", setModelCommand);
 
 if (import.meta.main) {
   await command.parse(Deno.args);

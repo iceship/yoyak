@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { ChatAnthropic } from "@langchain/anthropic";
-import type { BaseChatModel } from "@langchain/core";
+import { HumanMessage } from "@langchain/core/messages";
 import { ChatDeepSeek } from "@langchain/deepseek";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatOpenAI } from "@langchain/openai";
@@ -42,19 +42,30 @@ export const modelMonikers = [
 ] as const;
 
 /**
- * The type of a model.
+ * The short string representation of a model.
  */
 export type ModelMoniker = typeof modelMonikers[number];
 
 /**
+ * The model object.
+ */
+export type Model =
+  | ChatOpenAI
+  | ChatAnthropic
+  | ChatDeepSeek
+  | ChatGoogleGenerativeAI;
+
+/**
  * The constructor of a model.
  */
-export type Model = new (options: { model: ModelMoniker }) => BaseChatModel;
+export type ModelClass = new (
+  options: { model: ModelMoniker; apiKey: string },
+) => Model;
 
 /**
  * The map of model monikers to model constructors.
  */
-export const models: Record<ModelMoniker, Model> = {
+export const modelClasses: Record<ModelMoniker, ModelClass> = {
   "chatgpt-4o-latest": ChatOpenAI,
   "claude-3-5-haiku-latest": ChatAnthropic,
   "claude-3-5-sonnet-latest": ChatAnthropic,
@@ -72,3 +83,19 @@ export const models: Record<ModelMoniker, Model> = {
   "o1-preview": ChatOpenAI,
   "o3-mini": ChatOpenAI,
 };
+
+/**
+ * Tests the given model if it is working.
+ * @param model The model to test.
+ * @returns Whether the model is working.
+ */
+export async function testModel(model: Model): Promise<boolean> {
+  try {
+    const response = await model.invoke([
+      new HumanMessage("Please say “yes.”"),
+    ]);
+    return response.content.toString().match(/\byes\b/i) != null;
+  } catch {
+    return false;
+  }
+}
