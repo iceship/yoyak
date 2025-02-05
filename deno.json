@@ -1,0 +1,18 @@
+{
+  "name": "@hongminhee/yoyak",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./src/mod.ts",
+    "./cli": "./src/cli.ts",
+    "./scrape": "./src/scrape.ts"
+  },
+  "imports": {
+    "@cliffy/command": "jsr:@cliffy/command@^1.0.0-rc.7",
+    "@paoramen/cheer-reader": "jsr:@paoramen/cheer-reader@^0.1.2",
+    "cheerio": "npm:cheerio@^1.0.0",
+    "turndown": "npm:turndown@^7.2.0"
+  },
+  "tasks": {
+    "run": "deno run --allow-net --allow-env=NODE_V8_COVERAGE,UNDICI_NO_FG,JEST_WORKER_ID src/cli.ts"
+  }
+}
