@@ -14,17 +14,34 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { Command } from "@cliffy/command";
+import { isLanguageCode, validateLanguageCode } from "@hongminhee/iso639-1";
 import metadata from "../deno.json" with { type: "json" };
 import { scrape } from "./scrape.ts";
+import { translate } from "./translate.ts";
 
 const scrapeCommand = new Command()
   .arguments("<url:string>")
   .description("Scrape a web page and return the content in Markdown format.")
-  .action(async (_options: never, url: string) => {
-    const result = await scrape(url);
+  .option(
+    "-l, --language <language:string>",
+    "The language code in ISO 639-1 to translate the content into.  " +
+      "Do not translate if not specified.",
+  )
+  .action(async (options: { language: string }, url: string) => {
+    let result = await scrape(url);
+    if (options.language != null) {
+      if (!isLanguageCode(options.language)) {
+        console.error("-l/--language: Invalid language code.");
+        Deno.exit(1);
+      }
+    }
     if (result == null) {
       console.error("Failed to scrape the web page.");
       Deno.exit(1);
+    }
+    if (options.language) {
+      validateLanguageCode(options.language);
+      result = await translate(result, options.language);
     }
     console.log(result);
   });
