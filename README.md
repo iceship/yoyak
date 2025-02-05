@@ -1,10 +1,18 @@
 Yoyak: An LLM-powered CLI tool for summarizing web pages
 ========================================================
 
+[![Demo session][Demo session thumbnail]][Demo session]
+
 > [!NOTE]
-> This project is still in development and is not yet ready for use.
+> This project is still in development, so you may encounter some bugs or
+> unexpected behaviors.  Please report them to the [issue tracker] if you find
+> any.
 
 This is a small CLI tool that uses LLM to summarize and translate web pages.
+
+[Demo session thumbnail]: https://asciinema.org/a/701699.svg
+[Demo session]: https://asciinema.org/a/701699
+[issue tracker]: https://github.com/dahlia/yoyak/issues
 
 
 Installation
@@ -73,3 +81,13 @@ Supported models
  -  `o1-mini`
  -  `o1-preview`
  -  `o3-mini`
+
+
+Etymology
+---------
+
+Yoyak ([要約]) is a Sino-Korean word that means *summary*.
+
+[要約]: https://en.wiktionary.org/wiki/%EC%9A%94%EC%95%BD#Etymology_1
+
+<!-- cSpell: ignore Sino-Korean -->
