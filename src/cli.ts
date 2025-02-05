@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { Command, EnumType } from "@cliffy/command";
+import { CompletionsCommand } from "@cliffy/command/completions";
 import { Input } from "@cliffy/prompt";
 import { isLanguageCode, validateLanguageCode } from "@hongminhee/iso639-1";
 import metadata from "../deno.json" with { type: "json" };
@@ -27,6 +28,15 @@ import {
 import { scrape } from "./scrape.ts";
 import { summarize } from "./summary.ts";
 import { translate } from "./translate.ts";
+
+type GlobalOptions = {
+  model?: ModelMoniker;
+  apiKey?: string;
+};
+
+type GlobalTypes = {
+  model: typeof modelMoniker;
+};
 
 function getModel(
   options: { model?: ModelMoniker; apiKey?: string },
@@ -49,7 +59,7 @@ function getModel(
   return new modelClasses[model]({ model, apiKey });
 }
 
-const scrapeCommand = new Command()
+const scrapeCommand = new Command<GlobalOptions, GlobalTypes>()
   .arguments("<url:string>")
   .description(
     "Scrape a web page and return the content in Markdown format without summarization.",
@@ -59,32 +69,27 @@ const scrapeCommand = new Command()
     "The language code in ISO 639-1 to translate the content into.  " +
       "Do not translate if not specified.",
   )
-  .action(
-    async (
-      options: { model?: ModelMoniker; apiKey?: string; language: string },
-      url: string,
-    ) => {
-      let result = await scrape(url);
-      if (options.language != null) {
-        if (!isLanguageCode(options.language)) {
-          console.error("-l/--language: Invalid language code.");
-          Deno.exit(1);
-        }
-      }
-      if (result == null) {
-        console.error("Failed to scrape the web page.");
+  .action(async (options, url: string) => {
+    let result = await scrape(url);
+    if (options.language != null) {
+      if (!isLanguageCode(options.language)) {
+        console.error("-l/--language: Invalid language code.");
         Deno.exit(1);
       }
-      if (options.language) {
-        validateLanguageCode(options.language);
-        const model = getModel(options);
-        result = await translate(model, result, options.language);
-      }
-      console.log(result);
-    },
-  );
+    }
+    if (result == null) {
+      console.error("Failed to scrape the web page.");
+      Deno.exit(1);
+    }
+    if (options.language) {
+      validateLanguageCode(options.language);
+      const model = getModel(options);
+      result = await translate(model, result, options.language);
+    }
+    console.log(result);
+  });
 
-const summaryCommand = new Command()
+const summaryCommand = new Command<GlobalOptions, GlobalTypes>()
   .arguments("<url:string>")
   .description(
     "Summarize a web page and return the content in Markdown format.",
@@ -94,32 +99,27 @@ const summaryCommand = new Command()
     "The language code in ISO 639-1 to translate the content into.  " +
       "Do not translate if not specified.",
   )
-  .action(
-    async (
-      options: { model?: ModelMoniker; apiKey?: string; language: string },
-      url: string,
-    ) => {
-      if (options.language != null) {
-        if (!isLanguageCode(options.language)) {
-          console.error("-l/--language: Invalid language code.");
-          Deno.exit(1);
-        }
-      }
-      let result = await scrape(url);
-      if (result == null) {
-        console.error("Failed to scrape the web page.");
+  .action(async (options, url: string) => {
+    if (options.language != null) {
+      if (!isLanguageCode(options.language)) {
+        console.error("-l/--language: Invalid language code.");
         Deno.exit(1);
       }
-      const model = getModel(options);
-      result = await summarize(model, result);
-      if (options.language != null) {
-        result = await translate(model, result, options.language);
-      }
-      console.log(result);
-    },
-  );
+    }
+    let result = await scrape(url);
+    if (result == null) {
+      console.error("Failed to scrape the web page.");
+      Deno.exit(1);
+    }
+    const model = getModel(options);
+    result = await summarize(model, result);
+    if (options.language != null) {
+      result = await translate(model, result, options.language);
+    }
+    console.log(result);
+  });
 
-const getModelCommand = new Command()
+const getModelCommand = new Command<GlobalOptions, GlobalTypes>()
   .description(
     "Get the configured default model and the corresponding API key.",
   )
@@ -136,10 +136,10 @@ const getModelCommand = new Command()
 
 const modelMoniker = new EnumType(modelMonikers);
 
-const setModelCommand = new Command()
+const setModelCommand = new Command<GlobalOptions, GlobalTypes>()
   .arguments("<model:model>")
   .description("Set the default model and the corresponding API key.")
-  .action(async (options: { apiKey?: string }, model: ModelMoniker) => {
+  .action(async (options, model) => {
     const apiKey = options.apiKey ?? await Input.prompt("API key:");
     const llm = getModel({ model, apiKey });
     if (!await testModel(llm)) {
@@ -163,16 +163,17 @@ const command = new Command()
     depends: ["api-key"],
   })
   .globalOption("-a, --api-key <apiKey:string>", "The API key for the model.")
-  .arguments("<url:string>")
   .command("summary", summaryCommand)
   .command("scrape", scrapeCommand)
   .command("get-model", getModelCommand)
   .command("set-model", setModelCommand)
-  .action(() => {
-    console.error("Please specify a subcommand.");
-    Deno.exit(1);
-  });
+  .command("completions", new CompletionsCommand());
 
 if (import.meta.main) {
-  await command.parse(Deno.args);
+  const result = await command.parse(Deno.args);
+  // @ts-ignore: result.cmd and the command can be the same
+  if (result.cmd === command) {
+    console.error("Please specify a subcommand.");
+    Deno.exit(1);
+  }
 }

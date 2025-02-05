@@ -14,10 +14,10 @@
 // You should have received a copy of the GNU General Public License
 
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
-import { Model } from "./models.ts";
+import type { Model } from "./models.ts";
 
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-export const PROMPT =
+export const PROMPT: string =
   `You are a professional text summarization tool that processes Markdown-formatted text. Follow these guidelines to create summaries:
 
 1. Input Format

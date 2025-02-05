@@ -5,7 +5,9 @@
   "exports": {
     ".": "./src/mod.ts",
     "./cli": "./src/cli.ts",
+    "./models": "./src/models.ts",
     "./scrape": "./src/scrape.ts",
+    "./summary": "./src/summary.ts",
     "./translate": "./src/translate.ts"
   },
   "imports": {
@@ -24,10 +26,12 @@
   "fmt": {
     "exclude": [
       "*.md",
-      ".github/"
+      ".github/",
+      ".vscode"
     ]
   },
   "tasks": {
+    "check": "deno fmt --check . && deno check src/ && deno lint",
     "run": "deno run --allow-net --allow-env src/cli.ts"
   }
 }
