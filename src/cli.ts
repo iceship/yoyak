@@ -25,6 +25,7 @@ import {
   testModel,
 } from "./models.ts";
 import { scrape } from "./scrape.ts";
+import { summarize } from "./summary.ts";
 import { translate } from "./translate.ts";
 
 function getModel(
@@ -50,7 +51,9 @@ function getModel(
 
 const scrapeCommand = new Command()
   .arguments("<url:string>")
-  .description("Scrape a web page and return the content in Markdown format.")
+  .description(
+    "Scrape a web page and return the content in Markdown format without summarization.",
+  )
   .option(
     "-l, --language <language:string>",
     "The language code in ISO 639-1 to translate the content into.  " +
@@ -75,6 +78,41 @@ const scrapeCommand = new Command()
       if (options.language) {
         validateLanguageCode(options.language);
         const model = getModel(options);
+        result = await translate(model, result, options.language);
+      }
+      console.log(result);
+    },
+  );
+
+const summaryCommand = new Command()
+  .arguments("<url:string>")
+  .description(
+    "Summarize a web page and return the content in Markdown format.",
+  )
+  .option(
+    "-l, --language <language:string>",
+    "The language code in ISO 639-1 to translate the content into.  " +
+      "Do not translate if not specified.",
+  )
+  .action(
+    async (
+      options: { model?: ModelMoniker; apiKey?: string; language: string },
+      url: string,
+    ) => {
+      if (options.language != null) {
+        if (!isLanguageCode(options.language)) {
+          console.error("-l/--language: Invalid language code.");
+          Deno.exit(1);
+        }
+      }
+      let result = await scrape(url);
+      if (result == null) {
+        console.error("Failed to scrape the web page.");
+        Deno.exit(1);
+      }
+      const model = getModel(options);
+      result = await summarize(model, result);
+      if (options.language != null) {
         result = await translate(model, result, options.language);
       }
       console.log(result);
@@ -125,9 +163,15 @@ const command = new Command()
     depends: ["api-key"],
   })
   .globalOption("-a, --api-key <apiKey:string>", "The API key for the model.")
+  .arguments("<url:string>")
+  .command("summary", summaryCommand)
   .command("scrape", scrapeCommand)
   .command("get-model", getModelCommand)
-  .command("set-model", setModelCommand);
+  .command("set-model", setModelCommand)
+  .action(() => {
+    console.error("Please specify a subcommand.");
+    Deno.exit(1);
+  });
 
 if (import.meta.main) {
   await command.parse(Deno.args);
