@@ -62,6 +62,46 @@ It translates the summary to Korean.
 [ISO 639-1]: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
 
 
+Shell completion
+---------------
+
+Yoyak provides shell completion scripts for bash, fish, and zsh.
+
+### Bash
+
+To enable bash completion, add the following line to your *~/.bashrc* or
+*~/.bash_profile*:
+
+~~~~ bash
+source <(yoyak completions bash)
+~~~~
+
+### Fish
+
+To enable fish completion, add the following line to your
+*~/.config/fish/config.fish*:
+
+~~~~ fish
+source (yoyak completions fish | psub)
+~~~~
+
+### Zsh
+
+To enable zsh completion, add the following line to your *~/.zshrc*:
+
+~~~~ zsh
+source <(yoyak completions zsh)
+~~~~
+
+Or run the following command to use zsh fpath completions:[^1]
+
+~~~~ zsh
+yoyak completions zsh > /usr/local/share/zsh/site-functions/_yoyak
+~~~~
+
+[^1]: The *site-functions* path may vary depending on your system.
+
+
 Supported models
 ----------------
 
@@ -90,4 +130,4 @@ Yoyak ([要約]) is a Sino-Korean word that means *summary*.
 
 [要約]: https://en.wiktionary.org/wiki/%EC%9A%94%EC%95%BD#Etymology_1
 
-<!-- cSpell: ignore Sino-Korean -->
+<!-- cSpell: ignore psub fpath Sino-Korean -->
