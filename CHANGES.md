@@ -21,4 +21,4 @@ To be released.
 Version 0.1.0
 -------------
 
-Initial release.
+Initial release.  Released on February 5, 2025.
