@@ -4,7 +4,7 @@ Yoyak changelog
 Version 0.2.0
 -------------
 
-To be released.
+Released on February 7, 2025.
 
  -  Now more text encodings other than UTF-8 are supported.  All available
     encodings are listed in the [iconv-lite project's documentation].
