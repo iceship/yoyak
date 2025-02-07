@@ -20,7 +20,9 @@
     "@langchain/google-genai": "npm:@langchain/google-genai@^0.1.8",
     "@langchain/openai": "npm:@langchain/openai@^0.4.2",
     "@paoramen/cheer-reader": "jsr:@paoramen/cheer-reader@^0.1.2",
+    "chardet": "npm:chardet@^2.0.0",
     "cheerio": "npm:cheerio@^1.0.0",
+    "iconv-lite": "npm:iconv-lite@^0.6.3",
     "turndown": "npm:turndown@^7.2.0"
   },
   "fmt": {

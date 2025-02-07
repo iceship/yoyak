@@ -14,7 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { Readability } from "@paoramen/cheer-reader";
+import { detect } from "chardet";
 import { load } from "cheerio";
+import iconv from "iconv-lite";
+import { Buffer } from "node:buffer";
 import TurndownService from "turndown";
 
 const DEFAULT_USER_AGENT =
@@ -50,7 +53,12 @@ export async function scrape(
   const response = await fetch(url, {
     headers: { "User-Agent": userAgent },
   });
-  const content = await response.text();
+  const contentType = response.headers.get("Content-Type");
+  const body = new Uint8Array(await response.arrayBuffer());
+  const charset = contentType?.match(/charset=([^;]+)/)?.[1] ?? detect(body);
+  const content = charset == null || charset.match(/^\s*utf-?8\s*$/i)
+    ? new TextDecoder().decode(body)
+    : iconv.decode(Buffer.from(body), charset);
   const $ = load(content);
   const result = new Readability($).parse();
   if (result.content == null) return undefined;
