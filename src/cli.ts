@@ -69,8 +69,12 @@ const scrapeCommand = new Command<GlobalOptions, GlobalTypes>()
     "The language code in ISO 639-1 to translate the content into.  " +
       "Do not translate if not specified.",
   )
+  .option(
+    "-u, --user-agent <userAgent:string>",
+    "The User-Agent header to send in the HTTP request to the web page.",
+  )
   .action(async (options, url: string) => {
-    let result = await scrape(url);
+    let result = await scrape(url, { userAgent: options.userAgent });
     if (options.language != null) {
       if (!isLanguageCode(options.language)) {
         console.error("-l/--language: Invalid language code.");
@@ -99,6 +103,10 @@ const summaryCommand = new Command<GlobalOptions, GlobalTypes>()
     "The language code in ISO 639-1 to translate the content into.  " +
       "Do not translate if not specified.",
   )
+  .option(
+    "-u, --user-agent <userAgent:string>",
+    "The User-Agent header to send in the HTTP request to the web page.",
+  )
   .action(async (options, url: string) => {
     if (options.language != null) {
       if (!isLanguageCode(options.language)) {
@@ -106,7 +114,7 @@ const summaryCommand = new Command<GlobalOptions, GlobalTypes>()
         Deno.exit(1);
       }
     }
-    let result = await scrape(url);
+    let result = await scrape(url, { userAgent: options.userAgent });
     if (result == null) {
       console.error("Failed to scrape the web page.");
       Deno.exit(1);

@@ -6,6 +6,9 @@ Version 0.3.0
 
 To be released.
 
+ -  Added `-u`/`--user-agent` option to `yoyak scrape` and `yoyak summary`
+    commands to specify a custom `User-Agent` string.
+
  -  Yoyak now can be identified through its unique `User-Agent` string.  The
     `User-Agent` string is `Yoyak/0.3.0` followed by the version of Deno, e.g.,
     `Yoyak/0.3.0 (Deno/2.1.9)`.  [[#1]]
