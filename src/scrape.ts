@@ -19,9 +19,10 @@ import { load } from "cheerio";
 import iconv from "iconv-lite";
 import { Buffer } from "node:buffer";
 import TurndownService from "turndown";
+import metadata from "../deno.json" with { type: "json" };
 
 const DEFAULT_USER_AGENT =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0";
+  `Yoyak/${metadata.version} (Deno/${Deno.version.deno})`;
 
 /**
  * Options for the {@link scrape} function.

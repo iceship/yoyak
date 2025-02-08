@@ -6,6 +6,12 @@ Version 0.3.0
 
 To be released.
 
+ -  Yoyak now can be identified through its unique `User-Agent` string.  The
+    `User-Agent` string is `Yoyak/0.3.0` followed by the version of Deno, e.g.,
+    `Yoyak/0.3.0 (Deno/2.1.9)`.  [[#1]]
+
+[#1]: https://github.com/dahlia/yoyak/issues/1
+
 
 Version 0.2.0
 -------------
