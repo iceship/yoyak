@@ -23,6 +23,7 @@ running the following command:
 deno install --global --allow-net --allow-env jsr:@hongminhee/yoyak/cli
 ~~~~
 
+[releases page]: https://github.com/dahlia/yoyak/releases
 [Deno]: https://deno.com/
 
 
