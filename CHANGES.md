@@ -6,6 +6,9 @@ Version 0.3.0
 
 To be released.
 
+ -  We now distribute the official executables for Linux, macOS, and Windows.
+    You can download them from the [releases page].
+
  -  Added `-u`/`--user-agent` option to `yoyak scrape` and `yoyak summary`
     commands to specify a custom `User-Agent` string.
 
@@ -14,6 +17,7 @@ To be released.
     `Yoyak/0.3.0 (Deno/2.1.9)`.  [[#1]]
 
 [#1]: https://github.com/dahlia/yoyak/issues/1
+[releases page]: https://github.com/dahlia/yoyak/releases
 
 
 Version 0.2.0

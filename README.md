@@ -18,8 +18,11 @@ This is a small CLI tool that uses LLM to summarize and translate web pages.
 Installation
 ------------
 
-You need [Deno] installed on your system to run this app first.  Then you can
-install this program by running the following command:
+We distribute the official executables for Linux, macOS, and Windows.  You can
+download them from the [releases page].
+
+Or if you have [Deno] installed on your system, you can install this program by
+running the following command:
 
 ~~~~ bash
 deno install --global --allow-net --allow-env jsr:@hongminhee/yoyak/cli
