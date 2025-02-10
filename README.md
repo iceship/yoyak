@@ -3,11 +3,6 @@ Yoyak: An LLM-powered CLI tool for summarizing web pages
 
 [![Demo session][Demo session thumbnail]][Demo session]
 
-> [!NOTE]
-> This project is still in development, so you may encounter some bugs or
-> unexpected behaviors.  Please report them to the [issue tracker] if you find
-> any.
-
 This is a small CLI tool that uses LLM to summarize and translate web pages.
 
 [Demo session thumbnail]: https://asciinema.org/a/701699.svg

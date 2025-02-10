@@ -4,7 +4,7 @@ Yoyak changelog
 Version 0.3.0
 -------------
 
-To be released.
+Released on February 10, 2025.
 
  -  We now distribute the official executables for Linux, macOS, and Windows.
     You can download them from the [releases page].
