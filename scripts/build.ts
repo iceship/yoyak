@@ -83,6 +83,9 @@ const promises = targets.map(async ({ triple, moniker, binName, archive }) => {
     --output ${tempFile}
     --allow-net
     --allow-env
+    --allow-sys
+    --allow-read
+    --allow-write
     ${join(ROOT, "src", "cli.ts")}`;
   for (const file of EXTRA_FILES) {
     await copy(join(ROOT, file), join(tempDir, file));

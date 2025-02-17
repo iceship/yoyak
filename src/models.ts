@@ -50,6 +50,15 @@ export const modelMonikers = [
 export type ModelMoniker = typeof modelMonikers[number];
 
 /**
+ * Tests if the given value is a model moniker.
+ * @param value The value to test.
+ * @returns Whether the value is a model moniker.
+ */
+export function isModelMoniker(value: unknown): value is ModelMoniker {
+  return modelMonikers.includes(value as ModelMoniker);
+}
+
+/**
  * The model object.
  */
 export type Model =

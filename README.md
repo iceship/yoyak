@@ -20,7 +20,7 @@ Or if you have [Deno] installed on your system, you can install this program by
 running the following command:
 
 ~~~~ bash
-deno install --global --allow-net --allow-env jsr:@hongminhee/yoyak/cli
+deno install -gENRSW jsr:@hongminhee/yoyak/cli
 ~~~~
 
 [releases page]: https://github.com/dahlia/yoyak/releases
@@ -132,4 +132,4 @@ Yoyak ([要約]) is a Sino-Korean word that means *summary*.
 
 [要約]: https://en.wiktionary.org/wiki/%EC%9A%94%EC%95%BD#Etymology_1
 
-<!-- cSpell: ignore psub fpath Sino-Korean -->
+<!-- cSpell: ignore gENRSW psub fpath Sino-Korean -->

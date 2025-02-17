@@ -23,6 +23,7 @@
     "@paoramen/cheer-reader": "jsr:@paoramen/cheer-reader@^0.1.2",
     "@std/fs": "jsr:@std/fs@^1.0.11",
     "@std/path": "jsr:@std/path@^1.0.8",
+    "@std/toml": "jsr:@std/toml@^1.0.2",
     "chardet": "npm:chardet@^2.0.0",
     "cheerio": "npm:cheerio@^1.0.0",
     "iconv-lite": "npm:iconv-lite@^0.6.3",
@@ -39,6 +40,6 @@
   "tasks": {
     "build": "deno run --allow-env --allow-run --allow-read --allow-write scripts/build.ts",
     "check": "deno fmt --check . && deno check src/ && deno lint",
-    "run": "deno run --allow-net --allow-env src/cli.ts"
+    "run": "deno run --allow-net --allow-env --allow-sys --allow-read --allow-write src/cli.ts"
   }
 }

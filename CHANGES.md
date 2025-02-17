@@ -6,6 +6,14 @@ Version 0.4.0
 
 To be released.
 
+ -  Moved the path of the configuration file to:
+
+     -  Linux: *`$XDG_CONFIG_HOME`/yoyak/config.toml* or
+        *`$HOME`/.config/yoyak/config.toml*
+     -  macOS: *`$XDG_CONFIG_HOME`/yoyak/config.toml* or
+        *`$HOME`/.config/yoyak/config.toml*
+     -  Windows: *`%APPDATA%`\yoyak\config.toml*
+
  -  The `-l`/`--language` option now skips translation if the source language is
     the same as the target language.
 

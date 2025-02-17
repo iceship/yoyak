@@ -26,6 +26,7 @@ import {
   testModel,
 } from "./models.ts";
 import { scrape } from "./scrape.ts";
+import { loadSettings, saveSettings } from "./settings.ts";
 import { summarize } from "./summary.ts";
 import { translate } from "./translate.ts";
 
@@ -38,13 +39,13 @@ type GlobalTypes = {
   model: typeof modelMoniker;
 };
 
-function getModel(
+async function getModel(
   options: { model?: ModelMoniker; apiKey?: string },
-): Model {
+): Promise<Model> {
   let { model, apiKey } = options;
-  model ??= (localStorage.getItem("model") as ModelMoniker | undefined) ??
-    undefined;
-  apiKey ??= localStorage.getItem("apiKey") ?? undefined;
+  const settings = await loadSettings();
+  model ??= settings?.model ?? undefined;
+  apiKey ??= settings?.apiKey ?? undefined;
   if (model == null) {
     console.error(
       "-m/--model: The model must be specified for translation.",
@@ -87,7 +88,7 @@ const scrapeCommand = new Command<GlobalOptions, GlobalTypes>()
     }
     if (options.language) {
       validateLanguageCode(options.language);
-      const model = getModel(options);
+      const model = await getModel(options);
       result = await translate(model, result, options.language);
     }
     console.log(result);
@@ -119,7 +120,7 @@ const summaryCommand = new Command<GlobalOptions, GlobalTypes>()
       console.error("Failed to scrape the web page.");
       Deno.exit(1);
     }
-    const model = getModel(options);
+    const model = await getModel(options);
     result = await summarize(model, result);
     if (options.language != null) {
       result = await translate(model, result, options.language);
@@ -131,15 +132,14 @@ const getModelCommand = new Command<GlobalOptions, GlobalTypes>()
   .description(
     "Get the configured default model and the corresponding API key.",
   )
-  .action(() => {
-    const model = localStorage.getItem("model");
-    const apiKey = localStorage.getItem("apiKey");
-    if (model == null || apiKey == null) {
+  .action(async () => {
+    const settings = await loadSettings();
+    if (settings == null) {
       console.error("No model is configured.");
       Deno.exit(1);
     }
-    console.log(`Model: ${model}`);
-    console.log(`API key: ${apiKey}`);
+    console.log(`Model: ${settings.model}`);
+    console.log(`API key: ${settings.apiKey}`);
   });
 
 const modelMoniker = new EnumType(modelMonikers);
@@ -149,15 +149,14 @@ const setModelCommand = new Command<GlobalOptions, GlobalTypes>()
   .description("Set the default model and the corresponding API key.")
   .action(async (options, model) => {
     const apiKey = options.apiKey ?? await Input.prompt("API key:");
-    const llm = getModel({ model, apiKey });
+    const llm = await getModel({ model, apiKey });
     if (!await testModel(llm)) {
       console.error(
         "The model is not working; check the API key or your network connection.",
       );
       Deno.exit(1);
     }
-    localStorage.setItem("model", model);
-    localStorage.setItem("apiKey", apiKey);
+    await saveSettings({ model, apiKey });
   });
 
 const command = new Command()
