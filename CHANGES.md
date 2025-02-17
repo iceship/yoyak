@@ -4,7 +4,7 @@ Yoyak changelog
 Version 0.4.0
 -------------
 
-To be released.
+Released on February 17, 2025.
 
  -  Moved the path of the configuration file to:
 
