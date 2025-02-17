@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { authoritativeLabels, type LanguageCode } from "@hongminhee/iso639-1";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { detect } from "tinyld";
 import type { Model } from "./models.ts";
 
 function getPrompt(language: LanguageCode): string {
@@ -39,6 +40,7 @@ export async function translate(
   text: string,
   targetLanguage: LanguageCode,
 ): Promise<string> {
+  if (detect(text) === targetLanguage) return text;
   const messages = [
     new SystemMessage(getPrompt(targetLanguage)),
     new HumanMessage(text),

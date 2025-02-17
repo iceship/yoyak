@@ -6,6 +6,9 @@ Version 0.4.0
 
 To be released.
 
+ -  The `-l`/`--language` option now skips translation if the source language is
+    the same as the target language.
+
 
 Version 0.3.0
 -------------
