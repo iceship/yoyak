@@ -18,6 +18,9 @@ import { HumanMessage } from "@langchain/core/messages";
 import { ChatDeepSeek } from "@langchain/deepseek";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatOpenAI } from "@langchain/openai";
+import { getLogger } from "@logtape/logtape";
+
+const logger = getLogger(["yoyak", "models"]);
 
 /**
  * The list of available models.
@@ -105,12 +108,14 @@ export const modelClasses: Record<ModelMoniker, ModelClass> = {
  * @returns Whether the model is working.
  */
 export async function testModel(model: Model): Promise<boolean> {
+  const message = new HumanMessage("Please say “yes.”");
+  logger.debug("Testing model with message: {message}", { message });
   try {
-    const response = await model.invoke([
-      new HumanMessage("Please say “yes.”"),
-    ]);
+    const response = await model.invoke([message]);
+    logger.debug("Model response: {response}", { response });
     return response.content.toString().match(/\byes\b/i) != null;
-  } catch {
+  } catch (error) {
+    logger.debug("Model failed to respond: {error}", { error });
     return false;
   }
 }

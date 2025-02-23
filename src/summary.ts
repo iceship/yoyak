@@ -14,7 +14,10 @@
 // You should have received a copy of the GNU General Public License
 
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { getLogger } from "@logtape/logtape";
 import type { Model } from "./models.ts";
+
+const logger = getLogger(["yoyak", "summary"]);
 
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 export const PROMPT: string =
@@ -76,6 +79,11 @@ export async function summarize(
     new SystemMessage(PROMPT),
     new HumanMessage(text),
   ];
+  logger.debug(
+    "Invoking the model with the given messages: {messages}",
+    { messages },
+  );
   const result = await model.invoke(messages);
+  logger.debug("Received the result: {result}", { result });
   return result.content.toString();
 }

@@ -17,6 +17,15 @@ import { Command, EnumType } from "@cliffy/command";
 import { CompletionsCommand } from "@cliffy/command/completions";
 import { Input } from "@cliffy/prompt";
 import { isLanguageCode, validateLanguageCode } from "@hongminhee/iso639-1";
+import {
+  ansiColorFormatter,
+  configure,
+  dispose,
+  getLogger,
+  getStreamSink,
+} from "@logtape/logtape";
+import { readAll } from "@std/io";
+import { AsyncLocalStorage } from "node:async_hooks";
 import metadata from "../deno.json" with { type: "json" };
 import {
   type Model,
@@ -29,6 +38,33 @@ import { scrape } from "./scrape.ts";
 import { loadSettings, saveSettings } from "./settings.ts";
 import { summarize } from "./summary.ts";
 import { translate } from "./translate.ts";
+
+const consoleSink = getStreamSink(Deno.stderr.writable, {
+  formatter: ansiColorFormatter,
+});
+
+await configure({
+  contextLocalStorage: new AsyncLocalStorage(),
+  sinks: { console: (record) => consoleSink(record) },
+  loggers: [
+    {
+      category: ["logtape", "meta"],
+      lowestLevel: "warning",
+      sinks: ["console"],
+    },
+    { category: ["yoyak"], lowestLevel: "info", sinks: ["console"] },
+  ],
+});
+
+const logger = getLogger(["yoyak", "cli"]);
+
+async function exit(code?: number): Promise<never> {
+  // FIXME: When LogTape provides a way to choose the appropriate level for the
+  // log messages (`console.*`), we should use the console logger and get rid of
+  // this custom exit function.
+  await dispose();
+  Deno.exit(code);
+}
 
 type GlobalOptions = {
   model?: ModelMoniker;
@@ -50,20 +86,50 @@ async function getModel(
     console.error(
       "-m/--model: The model must be specified for translation.",
     );
-    Deno.exit(1);
+    return await exit(1);
   } else if (apiKey == null) {
     console.error(
       "-a/--api-key: The API key must be specified for the model.",
     );
-    Deno.exit(1);
+    return await exit(1);
   }
   return new modelClasses[model]({ model, apiKey });
+}
+
+async function scrapeContent(
+  url: string,
+  options: { userAgent?: string },
+): Promise<string> {
+  if (url === "-") {
+    const bytes = await readAll(Deno.stdin);
+    return new TextDecoder().decode(bytes);
+  } else if (URL.canParse(url)) {
+    const result = await scrape(url, { userAgent: options.userAgent });
+    if (result == null) {
+      console.error("Failed to scrape the web page.");
+      return await exit(1);
+    }
+    return result;
+  } else {
+    try {
+      return await Deno.readTextFile(url);
+    } catch (error) {
+      logger.debug(
+        "Failed to read the file {path}: {error}",
+        { path: url, error },
+      );
+      console.error("Failed to read the file:", url);
+      return await exit(1);
+    }
+  }
 }
 
 const scrapeCommand = new Command<GlobalOptions, GlobalTypes>()
   .arguments("<url:string>")
   .description(
-    "Scrape a web page and return the content in Markdown format without summarization.",
+    "Scrape a text file or a web page and return the content in Markdown " +
+      "format without summarization.  If you want to scrape a text from the " +
+      "standard input, give `-` as the argument.",
   )
   .option(
     "-l, --language <language:string>",
@@ -75,16 +141,16 @@ const scrapeCommand = new Command<GlobalOptions, GlobalTypes>()
     "The User-Agent header to send in the HTTP request to the web page.",
   )
   .action(async (options, url: string) => {
-    let result = await scrape(url, { userAgent: options.userAgent });
+    let result = await scrapeContent(url, { userAgent: options.userAgent });
     if (options.language != null) {
       if (!isLanguageCode(options.language)) {
         console.error("-l/--language: Invalid language code.");
-        Deno.exit(1);
+        return await exit(1);
       }
     }
     if (result == null) {
       console.error("Failed to scrape the web page.");
-      Deno.exit(1);
+      return await exit(1);
     }
     if (options.language) {
       validateLanguageCode(options.language);
@@ -97,7 +163,9 @@ const scrapeCommand = new Command<GlobalOptions, GlobalTypes>()
 const summaryCommand = new Command<GlobalOptions, GlobalTypes>()
   .arguments("<url:string>")
   .description(
-    "Summarize a web page and return the content in Markdown format.",
+    "Summarize a text file or a web page and return the content in Markdown " +
+      "format.  If you want to summarize a text from the standard input, " +
+      "give `-` as the argument.",
   )
   .option(
     "-l, --language <language:string>",
@@ -112,14 +180,10 @@ const summaryCommand = new Command<GlobalOptions, GlobalTypes>()
     if (options.language != null) {
       if (!isLanguageCode(options.language)) {
         console.error("-l/--language: Invalid language code.");
-        Deno.exit(1);
+        return await exit(1);
       }
     }
-    let result = await scrape(url, { userAgent: options.userAgent });
-    if (result == null) {
-      console.error("Failed to scrape the web page.");
-      Deno.exit(1);
-    }
+    let result = await scrapeContent(url, options);
     const model = await getModel(options);
     result = await summarize(model, result);
     if (options.language != null) {
@@ -136,7 +200,7 @@ const getModelCommand = new Command<GlobalOptions, GlobalTypes>()
     const settings = await loadSettings();
     if (settings == null) {
       console.error("No model is configured.");
-      Deno.exit(1);
+      return await exit(1);
     }
     console.log(`Model: ${settings.model}`);
     console.log(`API key: ${settings.apiKey}`);
@@ -154,7 +218,7 @@ const setModelCommand = new Command<GlobalOptions, GlobalTypes>()
       console.error(
         "The model is not working; check the API key or your network connection.",
       );
-      Deno.exit(1);
+      return await exit(1);
     }
     await saveSettings({ model, apiKey });
   });
@@ -170,6 +234,24 @@ const command = new Command()
     depends: ["api-key"],
   })
   .globalOption("-a, --api-key <apiKey:string>", "The API key for the model.")
+  .globalOption("-d, --debug", "Enable debug logging.", {
+    async action(options) {
+      if (!options.debug) return;
+      await configure({
+        contextLocalStorage: new AsyncLocalStorage(),
+        sinks: { console: consoleSink },
+        loggers: [
+          {
+            category: ["logtape", "meta"],
+            lowestLevel: "warning",
+            sinks: ["console"],
+          },
+          { category: ["yoyak"], lowestLevel: "debug", sinks: ["console"] },
+        ],
+        reset: true,
+      });
+    },
+  })
   .command("summary", summaryCommand)
   .command("scrape", scrapeCommand)
   .command("get-model", getModelCommand)
@@ -181,6 +263,6 @@ if (import.meta.main) {
   // @ts-ignore: result.cmd and the command can be the same
   if (result.cmd === command) {
     console.error("Please specify a subcommand.");
-    Deno.exit(1);
+    await exit(1);
   }
 }

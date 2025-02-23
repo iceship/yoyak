@@ -13,10 +13,13 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import { getLogger } from "@logtape/logtape";
 import { dirname, join } from "@std/path";
 import { parse, stringify } from "@std/toml";
 import { homedir } from "node:os";
 import { isModelMoniker, type ModelMoniker } from "./models.ts";
+
+const logger = getLogger(["yoyak", "settings"]);
 
 /**
  * The settings for the yoyak CLI tool.
@@ -61,6 +64,7 @@ export async function saveSettings(settings: Settings): Promise<void> {
   };
   const toml = stringify(config);
   const path = getSettingsPath();
+  logger.debug("Saving settings to {path}...", { path });
   await Deno.mkdir(dirname(path), { recursive: true });
   await Deno.writeTextFile(path, toml);
 }
@@ -72,6 +76,7 @@ export async function saveSettings(settings: Settings): Promise<void> {
  */
 export async function loadSettings(): Promise<Settings | undefined> {
   const path = getSettingsPath();
+  logger.debug("Loading settings from {path}...", { path });
   let toml: string;
   try {
     toml = await Deno.readTextFile(path);

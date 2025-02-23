@@ -6,6 +6,12 @@ Version 0.5.0
 
 To be released.
 
+ -  The `yoyak scrape` and `yoyak summary` commands now accept a local file path
+    and `-` as an argument.  If `-` is given, the commands read the input from
+    the standard input.
+
+ -  Added `-d`/`--debug` option to enable debug logging.
+
 
 Version 0.4.0
 -------------

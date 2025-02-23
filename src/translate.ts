@@ -15,8 +15,11 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { authoritativeLabels, type LanguageCode } from "@hongminhee/iso639-1";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { getLogger } from "@logtape/logtape";
 import { detect } from "tinyld";
 import type { Model } from "./models.ts";
+
+const logger = getLogger(["yoyak", "translate"]);
 
 function getPrompt(language: LanguageCode): string {
   const languageName = authoritativeLabels[language].en;
@@ -45,6 +48,8 @@ export async function translate(
     new SystemMessage(getPrompt(targetLanguage)),
     new HumanMessage(text),
   ];
+  logger.debug("Invoking the model with messages: {messages}", { messages });
   const result = await model.invoke(messages);
+  logger.debug("Received the result: {result}", { result });
   return result.content.toString();
 }

@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import { getLogger } from "@logtape/logtape";
 import { Readability } from "@paoramen/cheer-reader";
 import { detect } from "chardet";
 import { load } from "cheerio";
@@ -20,6 +21,8 @@ import iconv from "iconv-lite";
 import { Buffer } from "node:buffer";
 import TurndownService from "turndown";
 import metadata from "../deno.json" with { type: "json" };
+
+const logger = getLogger(["yoyak", "scrape"]);
 
 const DEFAULT_USER_AGENT =
   `Yoyak/${metadata.version} (Deno/${Deno.version.deno})`;
@@ -54,6 +57,10 @@ export async function scrape(
   const response = await fetch(url, {
     headers: { "User-Agent": userAgent },
   });
+  if (response.status >= 400) {
+    logger.debug("Failed to fetch the web page: {response}", { response });
+    return undefined;
+  }
   const contentType = response.headers.get("Content-Type");
   const body = new Uint8Array(await response.arrayBuffer());
   const charset = contentType?.match(/charset=([^;]+)/)?.[1] ?? detect(body);
@@ -62,7 +69,10 @@ export async function scrape(
     : iconv.decode(Buffer.from(body), charset);
   const $ = load(content);
   const result = new Readability($).parse();
-  if (result.content == null) return undefined;
+  if (result.content == null) {
+    logger.debug("Failed to extract content from the web page.");
+    return undefined;
+  }
   let md: string = turndownService.turndown(result.content);
   if (!md.match(/^\s*#\s/)) {
     md = `# ${result.title}\n\n${md}`;

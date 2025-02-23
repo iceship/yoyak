@@ -7,7 +7,6 @@ This is a small CLI tool that uses LLM to summarize and translate web pages.
 
 [Demo session thumbnail]: https://asciinema.org/a/701699.svg
 [Demo session]: https://asciinema.org/a/701699
-[issue tracker]: https://github.com/dahlia/yoyak/issues
 
 
 Installation
@@ -58,11 +57,15 @@ yoyak summary -l ko https://github.com/dahlia/yoyak
 
 It translates the summary to Korean.
 
+> [!TIP]
+> You can also give a local file path or `-` as an argument.  If `-` is given,
+> the command reads the input from the standard input.
+
 [ISO 639-1]: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
 
 
 Shell completion
----------------
+----------------
 
 Yoyak provides shell completion scripts for bash, fish, and zsh.
 
