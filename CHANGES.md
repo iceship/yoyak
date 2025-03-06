@@ -12,6 +12,13 @@ To be released.
 
  -  Added `-d`/`--debug` option to enable debug logging.
 
+ -  Added more models:
+
+     -  `claude-3-7-sonnet-latest`
+     -  `gemini-2.0-flash-lite`
+     -  `gemini-2.0-flash`
+     -  `gpt-4.5-preview`
+
 
 Version 0.4.0
 -------------
