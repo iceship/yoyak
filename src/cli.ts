@@ -87,7 +87,8 @@ async function getModel(
       "-m/--model: The model must be specified for translation.",
     );
     return await exit(1);
-  } else if (apiKey == null) {
+  }
+  if (apiKey == null) {
     console.error(
       "-a/--api-key: The API key must be specified for the model.",
     );
@@ -103,24 +104,24 @@ async function scrapeContent(
   if (url === "-") {
     const bytes = await readAll(Deno.stdin);
     return new TextDecoder().decode(bytes);
-  } else if (URL.canParse(url)) {
+  }
+  if (URL.canParse(url)) {
     const result = await scrape(url, { userAgent: options.userAgent });
     if (result == null) {
       console.error("Failed to scrape the web page.");
       return await exit(1);
     }
     return result;
-  } else {
-    try {
-      return await Deno.readTextFile(url);
-    } catch (error) {
-      logger.debug(
-        "Failed to read the file {path}: {error}",
-        { path: url, error },
-      );
-      console.error("Failed to read the file:", url);
-      return await exit(1);
-    }
+  }
+  try {
+    return await Deno.readTextFile(url);
+  } catch (error) {
+    logger.debug(
+      "Failed to read the file {path}: {error}",
+      { path: url, error },
+    );
+    console.error("Failed to read the file:", url);
+    return await exit(1);
   }
 }
 
@@ -141,7 +142,7 @@ const scrapeCommand = new Command<GlobalOptions, GlobalTypes>()
     "The User-Agent header to send in the HTTP request to the web page.",
   )
   .action(async (options, url: string) => {
-    let result = await scrapeContent(url, { userAgent: options.userAgent });
+    const result = await scrapeContent(url, { userAgent: options.userAgent });
     if (options.language != null) {
       if (!isLanguageCode(options.language)) {
         console.error("-l/--language: Invalid language code.");
@@ -152,12 +153,29 @@ const scrapeCommand = new Command<GlobalOptions, GlobalTypes>()
       console.error("Failed to scrape the web page.");
       return await exit(1);
     }
-    if (options.language) {
+    if (options.language == null) {
+      console.log(result);
+    } else {
       validateLanguageCode(options.language);
       const model = await getModel(options);
-      result = await translate(model, result, options.language);
+      const encoder = new TextEncoder();
+      const abortController = new AbortController();
+      Deno.addSignalListener(
+        "SIGINT",
+        abortController.abort.bind(abortController),
+      );
+      const signal = abortController.signal;
+      try {
+        for await (
+          const chunk of translate(model, result, options.language, { signal })
+        ) {
+          await Deno.stdout.write(encoder.encode(chunk));
+        }
+      } catch (error) {
+        logger.debug("Translation aborted: {error}", { error });
+      }
+      console.log();
     }
-    console.log(result);
   });
 
 const summaryCommand = new Command<GlobalOptions, GlobalTypes>()
@@ -183,13 +201,29 @@ const summaryCommand = new Command<GlobalOptions, GlobalTypes>()
         return await exit(1);
       }
     }
-    let result = await scrapeContent(url, options);
+    const result = await scrapeContent(url, options);
     const model = await getModel(options);
-    result = await summarize(model, result);
-    if (options.language != null) {
-      result = await translate(model, result, options.language);
+    const abortController = new AbortController();
+    if (options.language != null) validateLanguageCode(options.language);
+    Deno.addSignalListener(
+      "SIGINT",
+      abortController.abort.bind(abortController),
+    );
+    const signal = abortController.signal;
+    const encoder = new TextEncoder();
+    try {
+      for await (
+        const chunk of summarize(model, result, {
+          targetLanguage: options.language,
+          signal,
+        })
+      ) {
+        await Deno.stdout.write(encoder.encode(chunk));
+      }
+    } catch (error) {
+      logger.debug("Translation aborted: {error}", { error });
     }
-    console.log(result);
+    console.log();
   });
 
 const getModelCommand = new Command<GlobalOptions, GlobalTypes>()

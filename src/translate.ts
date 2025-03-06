@@ -32,24 +32,39 @@ No other information is needed than the text itself.`;
 }
 
 /**
+ * Options for {@link translate} function.
+ */
+export interface TranslateOptions {
+  /**
+   * An optional signal to cancel the operation.
+   */
+  signal?: AbortSignal;
+}
+
+/**
  * Translates the given text into the target language.
  * @param model The model to use for translation.
  * @param text The text to translate.
  * @param targetLanguage The target language code in ISO 639-1.
+ * @param options The options for translation.
  * @returns The translated text.
  */
-export async function translate(
+export async function* translate(
   model: Model,
   text: string,
   targetLanguage: LanguageCode,
-): Promise<string> {
-  if (detect(text) === targetLanguage) return text;
+  options: TranslateOptions = {},
+): AsyncIterable<string> {
+  if (detect(text) === targetLanguage) {
+    yield text;
+    return;
+  }
   const messages = [
     new SystemMessage(getPrompt(targetLanguage)),
     new HumanMessage(text),
   ];
   logger.debug("Invoking the model with messages: {messages}", { messages });
-  const result = await model.invoke(messages);
+  const result = await model.stream(messages, { signal: options.signal });
   logger.debug("Received the result: {result}", { result });
-  return result.content.toString();
+  for await (const chunk of result) yield chunk.content.toString();
 }

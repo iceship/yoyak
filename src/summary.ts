@@ -12,16 +12,16 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import { authoritativeLabels, type LanguageCode } from "@hongminhee/iso639-1";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { getLogger } from "@logtape/logtape";
 import type { Model } from "./models.ts";
 
 const logger = getLogger(["yoyak", "summary"]);
 
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-export const PROMPT: string =
-  `You are a professional text summarization tool that processes Markdown-formatted text. Follow these guidelines to create summaries:
+function getPrompt(targetLanguage?: LanguageCode): string {
+  return `You are a professional text summarization tool that processes Markdown-formatted text. Follow these guidelines to create summaries:
 
 1. Input Format
 - Expect Markdown-formatted text
@@ -30,10 +30,17 @@ export const PROMPT: string =
 - Handle nested Markdown elements appropriately
 
 2. Output Format
+${
+    targetLanguage == null
+      ? ""
+      : `- Translate the input text into the ${
+        authoritativeLabels[targetLanguage].en
+      } language`
+  }
 - Produce a single Markdown paragraph
 - Do not include any headings or section markers
 - Strip all formatting except essential emphasis (bold for key terms)
-- Remove all links, keeping only the link text
+- Remove all links, keeping only the link text except essential URLs
 - Exclude code blocks, images, and other non-text elements
 - Do not include any meta text, separator lines, or decorative elements
 - Output only the summary text, with no introduction or conclusion markers
@@ -48,6 +55,13 @@ export const PROMPT: string =
 - Retain key technical terms as they appear in the source
 
 4. Language Style
+${
+    targetLanguage == null
+      ? ""
+      : `- Translate the input text into the ${
+        authoritativeLabels[targetLanguage].en
+      } language`
+  }
 - Use concise and clear sentences
 - Minimize formatting to enhance readability
 - Clearly convey the cause-and-effect relationships from the original text
@@ -64,26 +78,44 @@ export const PROMPT: string =
 - Omit author attributions or source information
 
 Process the input Markdown text according to these guidelines and output only the plain summary paragraph in Markdown format.`;
+}
+
+/**
+ * Options for {@link summarize} function.
+ */
+export interface SummarizeOptions {
+  /**
+   * An optional target language code in ISO 639-1.
+   */
+  targetLanguage?: LanguageCode;
+
+  /**
+   * An optional signal to cancel the operation.
+   */
+  signal?: AbortSignal;
+}
 
 /**
  * Summarizes the given text.
  * @param model  The model to use for summarization.
  * @param text The text to summarize.
+ * @param options The options for summarization.
  * @returns The summarized text.
  */
-export async function summarize(
+export async function* summarize(
   model: Model,
   text: string,
-): Promise<string> {
+  options: SummarizeOptions = {},
+): AsyncIterable<string> {
   const messages = [
-    new SystemMessage(PROMPT),
+    new SystemMessage(getPrompt(options.targetLanguage)),
     new HumanMessage(text),
   ];
   logger.debug(
     "Invoking the model with the given messages: {messages}",
     { messages },
   );
-  const result = await model.invoke(messages);
+  const result = await model.stream(messages, { signal: options.signal });
   logger.debug("Received the result: {result}", { result });
-  return result.content.toString();
+  for await (const chunk of result) yield chunk.content.toString();
 }

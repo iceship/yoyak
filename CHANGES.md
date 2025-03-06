@@ -10,6 +10,15 @@ To be released.
     and `-` as an argument.  If `-` is given, the commands read the input from
     the standard input.
 
+ -  The output of the `yoyak scrape` and `yoyak summary` commands is now
+    streamed to the standard output.  This change allows you to process the
+    output in real-time.
+
+ -  The `yoyak scrape` and `yoyak summary` commands now accept `SIGINT`
+    <kbd>Ctrl</kbd>+<kbd>C</kbd> to stop the process gracefully.  If they are
+    interrupted, no more tokens are consumed, and the process is terminated
+    after the current token is processed.
+
  -  Added `-d`/`--debug` option to enable debug logging.
 
  -  Added more models:
