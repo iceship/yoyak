@@ -1,0 +1,48 @@
+{
+  "deno": {
+    "enable": true
+  },
+  "ensure_final_newline_on_save": true,
+  "format_on_save": "on",
+  "formatter": "language_server",
+  "languages": {
+    "JavaScript": {
+      "language_servers": [
+        "deno",
+        "!typescript-language-server",
+        "!vtsls",
+        "!biome",
+        "..."
+      ]
+    },
+    "JSON": {
+      "language_servers": [
+        "deno",
+        "!biome",
+        "..."
+      ]
+    },
+    "TypeScript": {
+      "language_servers": [
+        "deno",
+        "!typescript-language-server",
+        "!vtsls",
+        "!biome",
+        "..."
+      ]
+    },
+    "TSX": {
+      "language_servers": [
+        "deno",
+        "!typescript-language-server",
+        "!vtsls",
+        "!biome",
+        "..."
+      ]
+    }
+  },
+  "show_wrap_guides": true,
+  "wrap_guides": [
+    80
+  ]
+}
