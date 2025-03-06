@@ -4,7 +4,7 @@ Yoyak changelog
 Version 0.5.0
 -------------
 
-To be released.
+Released on March 6, 2025.
 
  -  The `yoyak scrape` and `yoyak summary` commands now accept a local file path
     and `-` as an argument.  If `-` is given, the commands read the input from
