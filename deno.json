@@ -1,6 +1,6 @@
 {
   "name": "@hongminhee/yoyak",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "license": "GPL-3.0",
   "exports": {
     ".": "./src/mod.ts",
@@ -42,6 +42,12 @@
   "tasks": {
     "build": "deno run --allow-env --allow-run --allow-read --allow-write scripts/build.ts",
     "check": "deno fmt --check . && deno check src/ && deno lint",
-    "run": "deno run --allow-net --allow-env --allow-sys --allow-read --allow-write src/cli.ts"
+    "run": "deno run --allow-net --allow-env --allow-sys --allow-read --allow-write src/cli.ts",
+    "hooks:install": "deno run --allow-read=deno.json,.git/hooks/ --allow-write=.git/hooks/ jsr:@hongminhee/deno-task-hooks",
+    "hooks:pre-commit": {
+      "dependencies": [
+        "check"
+      ]
+    }
   }
 }
