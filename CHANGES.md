@@ -6,6 +6,9 @@ Version 0.5.1
 
 To be released.
 
+ -  Enhanced translation capabilities to properly handle documents of any size,
+    ensuring complete translations without content loss.
+
 
 Version 0.5.0
 -------------
