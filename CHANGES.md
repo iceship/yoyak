@@ -7,6 +7,15 @@ Version 0.6.0
 To be released.
 
 
+Version 0.5.1
+-------------
+
+Released on March 10, 2025.
+
+ -  Enhanced translation capabilities to properly handle documents of any size,
+    ensuring complete translations without content loss.
+
+
 Version 0.5.0
 -------------
 

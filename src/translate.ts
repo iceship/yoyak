@@ -14,22 +14,32 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { authoritativeLabels, type LanguageCode } from "@hongminhee/iso639-1";
-import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import {
+  AIMessage,
+  HumanMessage,
+  SystemMessage,
+} from "@langchain/core/messages";
 import { getLogger } from "@logtape/logtape";
 import { detect } from "tinyld";
 import type { Model } from "./models.ts";
 
 const logger = getLogger(["yoyak", "translate"]);
 
-function getPrompt(language: LanguageCode): string {
+function getSystemPrompt(language: LanguageCode, delimiter: string): string {
   const languageName = authoritativeLabels[language].en;
   return `You are a highly skilled translator with expertise in many languages. \
 Your task is to identify the language of the text I provide and accurately translate \
 it into the ${languageName} language while preserving the meaning, tone, \
 and nuance of the original text. Please maintain proper grammar, spelling, \
 and punctuation in the translated version. The input and output are both in Markdown. \
-No other information is needed than the text itself.`;
+No other information is needed than the text itself.
+
+After you finish your translation, append the following marker: "${delimiter}" \
+(without quotes). This marker indicates that your translation is complete.`;
 }
+
+const CONTINUE_PROMPT = `Please continue translating right after the previous \
+translation, without any duplicate sentences.`;
 
 /**
  * Options for {@link translate} function.
@@ -59,12 +69,35 @@ export async function* translate(
     yield text;
     return;
   }
+  const delimiter = `</${Math.random().toString(36).substring(2, 10)}>`;
   const messages = [
-    new SystemMessage(getPrompt(targetLanguage)),
+    new SystemMessage(getSystemPrompt(targetLanguage, delimiter)),
     new HumanMessage(text),
   ];
-  logger.debug("Invoking the model with messages: {messages}", { messages });
-  const result = await model.stream(messages, { signal: options.signal });
-  logger.debug("Received the result: {result}", { result });
-  for await (const chunk of result) yield chunk.content.toString();
+  let complete = false;
+  do {
+    logger.debug("Invoking the model with messages: {messages}", { messages });
+    const result = await model.stream(messages, { signal: options.signal });
+    logger.debug("Received the result: {result}", { result });
+    let message = "";
+    let buffer = "";
+    for await (const chunk of result) {
+      const str = chunk.content.toString();
+      buffer += str;
+      message += str;
+      if (buffer.match(/<\/[0-9a-z]{0,10}$/)) continue;
+      complete = message.includes(delimiter);
+      if (complete) {
+        buffer = buffer.substring(0, buffer.indexOf(delimiter));
+      }
+      yield buffer;
+      buffer = "";
+      if (complete) break;
+    }
+    if (!complete) yield " ";
+    messages.push(
+      new AIMessage(message),
+      new HumanMessage(CONTINUE_PROMPT),
+    );
+  } while (!complete);
 }
