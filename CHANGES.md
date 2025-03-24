@@ -6,6 +6,9 @@ Version 0.6.0
 
 To be released.
 
+ -  Added `-p`/`--paragraphs` option to `yoyak summary` command to specify the
+    number of paragraphs to produce.  The default value is 1.
+
 
 Version 0.5.1
 -------------

@@ -13,10 +13,10 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import { Command, EnumType } from "@cliffy/command";
+import { Command, EnumType, ValidationError } from "@cliffy/command";
 import { CompletionsCommand } from "@cliffy/command/completions";
 import { Input } from "@cliffy/prompt";
-import { isLanguageCode, validateLanguageCode } from "@hongminhee/iso639-1";
+import { isLanguageCode } from "@hongminhee/iso639-1";
 import {
   ansiColorFormatter,
   configure,
@@ -136,6 +136,14 @@ const scrapeCommand = new Command<GlobalOptions, GlobalTypes>()
     "-l, --language <language:string>",
     "The language code in ISO 639-1 to translate the content into.  " +
       "Do not translate if not specified.",
+    (language) => {
+      if (!isLanguageCode(language)) {
+        throw new ValidationError(
+          "-l/--language: Expected a valid language code.",
+        );
+      }
+      return language;
+    },
   )
   .option(
     "-u, --user-agent <userAgent:string>",
@@ -143,12 +151,6 @@ const scrapeCommand = new Command<GlobalOptions, GlobalTypes>()
   )
   .action(async (options, url: string) => {
     const result = await scrapeContent(url, { userAgent: options.userAgent });
-    if (options.language != null) {
-      if (!isLanguageCode(options.language)) {
-        console.error("-l/--language: Invalid language code.");
-        return await exit(1);
-      }
-    }
     if (result == null) {
       console.error("Failed to scrape the web page.");
       return await exit(1);
@@ -156,7 +158,6 @@ const scrapeCommand = new Command<GlobalOptions, GlobalTypes>()
     if (options.language == null) {
       console.log(result);
     } else {
-      validateLanguageCode(options.language);
       const model = await getModel(options);
       const encoder = new TextEncoder();
       const abortController = new AbortController();
@@ -189,32 +190,50 @@ const summaryCommand = new Command<GlobalOptions, GlobalTypes>()
     "-l, --language <language:string>",
     "The language code in ISO 639-1 to translate the content into.  " +
       "Do not translate if not specified.",
+    (language) => {
+      if (!isLanguageCode(language)) {
+        throw new ValidationError(
+          "-l/--language: Expected a valid language code.",
+        );
+      }
+      return language;
+    },
+  )
+  .option(
+    "-p, --paragraphs <paragraphs:number>",
+    "The number of paragraphs to produce.",
+    {
+      default: 1,
+      value(paragraphs) {
+        if (paragraphs < 1 || !Number.isInteger(paragraphs)) {
+          throw new ValidationError(
+            "-p/--paragraphs: Expected a positive integer.",
+          );
+        }
+        return paragraphs;
+      },
+    },
   )
   .option(
     "-u, --user-agent <userAgent:string>",
     "The User-Agent header to send in the HTTP request to the web page.",
   )
   .action(async (options, url: string) => {
-    if (options.language != null) {
-      if (!isLanguageCode(options.language)) {
-        console.error("-l/--language: Invalid language code.");
-        return await exit(1);
-      }
-    }
     const result = await scrapeContent(url, options);
     const model = await getModel(options);
     const abortController = new AbortController();
-    if (options.language != null) validateLanguageCode(options.language);
     Deno.addSignalListener(
       "SIGINT",
       abortController.abort.bind(abortController),
     );
     const signal = abortController.signal;
     const encoder = new TextEncoder();
+    console.debug(options);
     try {
       for await (
         const chunk of summarize(model, result, {
           targetLanguage: options.language,
+          paragraphs: options.paragraphs,
           signal,
         })
       ) {

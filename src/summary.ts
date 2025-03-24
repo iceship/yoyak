@@ -20,7 +20,7 @@ import type { Model } from "./models.ts";
 
 const logger = getLogger(["yoyak", "summary"]);
 
-function getPrompt(targetLanguage?: LanguageCode): string {
+function getPrompt(paragraphs: number, targetLanguage?: LanguageCode): string {
   return `You are a professional text summarization tool that processes Markdown-formatted text. Follow these guidelines to create summaries:
 
 1. Input Format
@@ -37,7 +37,11 @@ ${
         authoritativeLabels[targetLanguage].en
       } language`
   }
-- Produce a single Markdown paragraph
+- ${
+    paragraphs === 1
+      ? "Produce a single Markdown paragraph"
+      : `Produce ${paragraphs} Markdown paragraphs`
+  }
 - Do not include any headings or section markers
 - Strip all formatting except essential emphasis (bold for key terms)
 - Remove all links, keeping only the link text except essential URLs
@@ -77,7 +81,11 @@ ${
 - Remove any front matter or metadata
 - Omit author attributions or source information
 
-Process the input Markdown text according to these guidelines and output only the plain summary paragraph in Markdown format.`;
+Process the input Markdown text according to these guidelines and output only the ${
+    paragraphs === 1
+      ? "plain summary paragraph"
+      : `${paragraphs} plain summary paragraphs`
+  } in Markdown format.`;
 }
 
 /**
@@ -88,6 +96,12 @@ export interface SummarizeOptions {
    * An optional target language code in ISO 639-1.
    */
   targetLanguage?: LanguageCode;
+
+  /**
+   * The number of paragraphs to produce.
+   * @default `1`
+   */
+  paragraphs?: number;
 
   /**
    * An optional signal to cancel the operation.
@@ -107,8 +121,11 @@ export async function* summarize(
   text: string,
   options: SummarizeOptions = {},
 ): AsyncIterable<string> {
+  console.debug(options);
   const messages = [
-    new SystemMessage(getPrompt(options.targetLanguage)),
+    new SystemMessage(
+      getPrompt(Math.max(1, options.paragraphs ?? 1), options.targetLanguage),
+    ),
     new HumanMessage(text),
   ];
   logger.debug(
