@@ -110,16 +110,20 @@ Supported models
  -  `chatgpt-4o-latest`
  -  `claude-3-5-haiku-latest`
  -  `claude-3-5-sonnet-latest`
+ -  `claude-3-7-sonnet-latest`
  -  `claude-3-opus-latest`
  -  `deepseek-chat`
  -  `deepseek-reasoner`
  -  `gemini-1.5-flash`
  -  `gemini-1.5-flash-8b`
  -  `gemini-1.5-pro`
+ -  `gemini-2.0-flash`
  -  `gemini-2.0-flash-exp`
+ -  `gemini-2.0-flash-lite`
  -  `gemini-2.0-flash-lite-preview-02-05`
  -  `gemini-2.0-flash-thinking-exp-01-21`
  -  `gemini-2.0-pro-exp-02-05`
+ -  `gpt-4.5-preview`
  -  `gpt-4o`
  -  `gpt-4o-mini`
  -  `o1`
