@@ -4,7 +4,13 @@ Yoyak changelog
 Version 0.5.2
 -------------
 
-To be released.
+ -  Added more models:
+
+     -  `gemini-2.5-flash-preview-04-17`
+     -  `gemini-2.5-pro-preview-03-25`
+     -  `gpt-4.1`
+     -  `o3`
+     -  `o4-mini`
 
 
 Version 0.5.1

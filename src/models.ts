@@ -42,13 +42,18 @@ export const modelMonikers = [
   "gemini-2.0-flash-lite-preview-02-05",
   "gemini-2.0-flash-thinking-exp-01-21",
   "gemini-2.0-pro-exp-02-05",
+  "gemini-2.5-flash-preview-04-17",
+  "gemini-2.5-pro-preview-03-25",
+  "gpt-4.1",
   "gpt-4.5-preview",
   "gpt-4o",
   "gpt-4o-mini",
   "o1",
   "o1-mini",
   "o1-preview",
+  "o3",
   "o3-mini",
+  "o4-mini",
 ] as const;
 
 /**
@@ -101,13 +106,18 @@ export const modelClasses: Record<ModelMoniker, ModelClass> = {
   "gemini-2.0-flash-lite-preview-02-05": ChatGoogleGenerativeAI,
   "gemini-2.0-flash-thinking-exp-01-21": ChatGoogleGenerativeAI,
   "gemini-2.0-pro-exp-02-05": ChatGoogleGenerativeAI,
+  "gemini-2.5-flash-preview-04-17": ChatGoogleGenerativeAI,
+  "gemini-2.5-pro-preview-03-25": ChatGoogleGenerativeAI,
+  "gpt-4.1": ChatOpenAI,
   "gpt-4.5-preview": ChatOpenAI,
   "gpt-4o": ChatOpenAI,
   "gpt-4o-mini": ChatOpenAI,
   "o1": ChatOpenAI,
   "o1-mini": ChatOpenAI,
   "o1-preview": ChatOpenAI,
+  "o3": ChatOpenAI,
   "o3-mini": ChatOpenAI,
+  "o4-mini": ChatOpenAI,
 };
 
 /**
