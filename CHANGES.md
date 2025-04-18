@@ -10,6 +10,20 @@ To be released.
     number of paragraphs to produce.  The default value is 1.
 
 
+Version 0.5.2
+-------------
+
+Released on April 18, 2025.
+
+ -  Added more models:
+
+     -  `gemini-2.5-flash-preview-04-17`
+     -  `gemini-2.5-pro-preview-03-25`
+     -  `gpt-4.1`
+     -  `o3`
+     -  `o4-mini`
+
+
 Version 0.5.1
 -------------
 
