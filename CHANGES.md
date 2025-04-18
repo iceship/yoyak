@@ -4,6 +4,8 @@ Yoyak changelog
 Version 0.5.2
 -------------
 
+Released on April 18, 2025.
+
  -  Added more models:
 
      -  `gemini-2.5-flash-preview-04-17`
