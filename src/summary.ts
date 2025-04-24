@@ -121,7 +121,6 @@ export async function* summarize(
   text: string,
   options: SummarizeOptions = {},
 ): AsyncIterable<string> {
-  console.debug(options);
   const messages = [
     new SystemMessage(
       getPrompt(Math.max(1, options.paragraphs ?? 1), options.targetLanguage),

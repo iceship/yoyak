@@ -228,7 +228,6 @@ const summaryCommand = new Command<GlobalOptions, GlobalTypes>()
     );
     const signal = abortController.signal;
     const encoder = new TextEncoder();
-    console.debug(options);
     try {
       for await (
         const chunk of summarize(model, result, {
