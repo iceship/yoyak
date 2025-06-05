@@ -17,6 +17,7 @@ import { ChatAnthropic } from "@langchain/anthropic";
 import { HumanMessage } from "@langchain/core/messages";
 import { ChatDeepSeek } from "@langchain/deepseek";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { ChatOllama } from "@langchain/ollama";
 import { ChatOpenAI } from "@langchain/openai";
 import { getLogger } from "@logtape/logtape";
 
@@ -44,6 +45,7 @@ export const modelMonikers = [
   "gemini-2.0-pro-exp-02-05",
   "gemini-2.5-flash-preview-04-17",
   "gemini-2.5-pro-preview-03-25",
+  "gemma3",
   "gpt-4.1",
   "gpt-4.5-preview",
   "gpt-4o",
@@ -77,7 +79,8 @@ export type Model =
   | ChatOpenAI
   | ChatAnthropic
   | ChatDeepSeek
-  | ChatGoogleGenerativeAI;
+  | ChatGoogleGenerativeAI
+  | ChatOllama;
 
 /**
  * The constructor of a model.
@@ -108,6 +111,7 @@ export const modelClasses: Record<ModelMoniker, ModelClass> = {
   "gemini-2.0-pro-exp-02-05": ChatGoogleGenerativeAI,
   "gemini-2.5-flash-preview-04-17": ChatGoogleGenerativeAI,
   "gemini-2.5-pro-preview-03-25": ChatGoogleGenerativeAI,
+  "gemma3": ChatOllama,
   "gpt-4.1": ChatOpenAI,
   "gpt-4.5-preview": ChatOpenAI,
   "gpt-4o": ChatOpenAI,

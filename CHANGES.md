@@ -9,6 +9,10 @@ To be released.
  -  Added `-p`/`--paragraphs` option to `yoyak summary` command to specify the
     number of paragraphs to produce.  The default value is 1.
 
+ -  Added model `gemma3`. [[#2] by Juil Kim]
+
+[#2]: https://github.com/dahlia/yoyak/pull/2
+
 
 Version 0.5.2
 -------------
